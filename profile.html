@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blox2D — Profile</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #0d0d0f;
+      color: white;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 80px auto;
+      background: #15151c;
+      border: 1px solid #222;
+      border-radius: 12px;
+      padding: 30px;
+    }
+
+    h2 {
+      color: #4da6ff;
+      margin-top: 0;
+    }
+
+    .info {
+      margin: 15px 0;
+      color: #ccc;
+    }
+
+    button {
+      margin-top: 30px;
+      padding: 12px 20px;
+      background: #ff4d4d;
+      border: none;
+      border-radius: 6px;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Your Profile</h2>
+
+  <div class="info">
+    <strong>Username:</strong>
+    <span id="username"></span>
+  </div>
+
+  <div class="info">
+    <strong>Email:</strong>
+    <span id="email"></span>
+  </div>
+
+  <button onclick="logout()">Logout</button>
+</div>
+
+<script>
+  const user = localStorage.getItem("blox2d_user");
+  const email = localStorage.getItem("blox2d_email");
+
+  if (!user) {
+    window.location.href = "login.html";
+  }
+
+  document.getElementById("username").innerText = user || "Unknown";
+  document.getElementById("email").innerText = email || "Not set";
+
+  function logout() {
+    localStorage.clear();
+    window.location.href = "login.html";
+  }
+</script>
+
+</body>
+</html>
