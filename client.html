@@ -3,85 +3,43 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Blox2D Client</title>
+<title>Blox2D Client (Multiplayer)</title>
 <style>
-body {
-  margin:0;
-  font-family:Arial;
-  background:#000;
-  color:white;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-}
-header {
-  padding:15px;
-  background:#121217;
-  width:100%;
-  text-align:center;
-  font-weight:bold;
-}
-#canvas {
-  background:#111;
-  margin-top:10px;
-  border:1px solid #333;
-}
-#scoreMsg {
-  color: #4da6ff;
-  margin-top:10px;
-}
+body{margin:0;font-family:Arial;background:#000;color:white;display:flex;flex-direction:column;align-items:center;}
+header{padding:15px;background:#121217;width:100%;text-align:center;font-weight:bold;}
+#canvas{background:#111;margin-top:10px;border:1px solid #333;}
+#scoreMsg{color:#4da6ff;margin-top:10px;}
 </style>
 </head>
 <body>
 
-<header>🎮 Blox2D Client</header>
+<header>🎮 Blox2D Client (Multiplayer)</header>
 <canvas id="canvas" width="800" height="500"></canvas>
 <div id="scoreMsg"></div>
 
 <script>
-// Load Game by ID
+// Get game ID from URL
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
 const games = JSON.parse(localStorage.getItem("blox_games")||"[]");
 const game = games.find(g=>g.id===id);
+if(!game){ alert("Game not found!"); throw new Error("Game not found"); }
 
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const scoreMsg = document.getElementById("scoreMsg");
 
-if(!game){
-  ctx.fillStyle="#fff";
-  ctx.fillText("Game not found!", 50,50);
-  throw new Error("Game not found");
-}
+let player={x:100,y:400,w:30,h:30,color:"#4da6ff",speed:5,jumpHeight:12,velY:0,onGround:false};
+let gravity=1,score=0,messages=[],keys={};
+let objects = game.objects.map(o=>({...o}));
 
-/***********************
-  Game State
-************************/
-let player = {x:100,y:400,w:30,h:30,color:"#4da6ff",speed:5,jumpHeight:12,velY:0,onGround:false};
-let gravity = 1;
-let score = 0;
-let messages = [];
-let keys = {};
-let objects = game.objects.map(o=>({
-  name:o.name,
-  x:o.x,
-  y:o.y,
-  w:o.w,
-  h:o.h,
-  color:o.color,
-  rotation:o.rotation||0
-}));
-
-/***********************
-  Parse Script
-************************/
+// Parse script
 const lines = game.script.split("\n").map(l=>l.trim());
 let inStart=false;
 lines.forEach(line=>{
   if(line.startsWith("//")||line==="") return;
-  if(line.startsWith("when start")){inStart=true; return;}
-  if(line==="end"){inStart=false; return;}
+  if(line.startsWith("when start")){inStart=true;return;}
+  if(line==="end"){inStart=false;return;}
   if(inStart){
     if(line.startsWith("player.speed")) player.speed=parseInt(line.split("=")[1]);
     if(line.startsWith("player.jumpHeight")) player.jumpHeight=parseInt(line.split("=")[1]);
@@ -91,93 +49,20 @@ lines.forEach(line=>{
   }
 });
 
-/***********************
-  Key Events
-************************/
+// Key events
 window.addEventListener("keydown",e=>keys[e.key]=true);
 window.addEventListener("keyup",e=>keys[e.key]=false);
 
-/***********************
-  Utility
-************************/
-function message(text){messages.push({text,time:120});}
-function collide(a,b){
-  return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
-}
+// Multiplayer setup
+const ws = new WebSocket("ws://localhost:8080");
+let playerID = null;
+let otherPlayers = {};
 
-/***********************
-  Game Loop
-************************/
-function update(){
-  // Player movement
-  if(keys["ArrowLeft"]) player.x -= player.speed;
-  if(keys["ArrowRight"]) player.x += player.speed;
-  if(keys["ArrowUp"] && player.onGround){player.velY=-player.jumpHeight; player.onGround=false;}
+ws.onopen = ()=>{
+  ws.send(JSON.stringify({type:'join', gameID:id, x:player.x, y:player.y}));
+};
 
-  // Gravity
-  player.velY += gravity;
-  player.y += player.velY;
-
-  // Floor collision
-  if(player.y+player.h > canvas.height){
-    player.y = canvas.height-player.h;
-    player.velY = 0;
-    player.onGround = true;
-  }
-
-  // Object collisions
-  objects.forEach(o=>{
-    if(collide(player,o)){
-      score += 10;
-      message("Hit "+o.name+"! +10 score");
-      // Simple rebound
-      player.y = o.y - player.h;
-      player.velY = 0;
-      player.onGround = true;
-    }
-  });
-
-  draw();
-  requestAnimationFrame(update);
-}
-
-/***********************
-  Draw
-************************/
-function draw(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  // Draw objects
-  objects.forEach(o=>{
-    ctx.save();
-    ctx.translate(o.x+o.w/2,o.y+o.h/2);
-    ctx.rotate(o.rotation);
-    ctx.fillStyle=o.color;
-    ctx.fillRect(-o.w/2,-o.h/2,o.w,o.h);
-    ctx.restore();
-  });
-
-  // Draw player
-  ctx.fillStyle = player.color;
-  ctx.fillRect(player.x,player.y,player.w,player.h);
-
-  // Draw messages
-  let y=30;
-  messages = messages.filter(m=>{
-    ctx.fillStyle="#4da6ff";
-    ctx.fillText(m.text,10,y);
-    y+=20;
-    m.time--;
-    return m.time>0;
-  });
-
-  // Draw score
-  ctx.fillStyle="#4da6ff";
-  ctx.fillText("Score: "+score,canvas.width-120,30);
-}
-
-update();
-</script>
-
-</body>
-</html>
+ws.onmessage = e=>{
+  const data = JSON.parse(e.data);
+  if(data.type==='joined') playerID=data.playerID;
+  if(data.type==='player
