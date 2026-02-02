@@ -23,7 +23,6 @@
       border-radius: 12px;
       width: 360px;
       padding: 30px;
-      box-shadow: 0 0 40px rgba(0,0,0,0.4);
     }
 
     h2 {
@@ -39,12 +38,6 @@
       border: 1px solid #333;
       border-radius: 6px;
       color: white;
-      font-size: 14px;
-    }
-
-    input:focus {
-      outline: none;
-      border-color: #4da6ff;
     }
 
     button {
@@ -54,10 +47,9 @@
       background: #4da6ff;
       border: none;
       border-radius: 6px;
-      font-size: 15px;
+      font-weight: bold;
       cursor: pointer;
       color: black;
-      font-weight: bold;
     }
 
     .error {
@@ -80,84 +72,66 @@
       color: #4da6ff;
     }
 
-    .hidden {
-      display: none;
-    }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
 
 <div class="box">
 
-  <!-- LOGIN -->
   <div id="login">
     <h2>Login</h2>
-    <input id="loginUser" type="text" placeholder="Username" />
-    <input id="loginPass" type="password" placeholder="Password" />
+    <input id="loginUser" placeholder="Username">
+    <input id="loginPass" type="password" placeholder="Password">
     <button onclick="login()">Login</button>
     <div id="loginError" class="error"></div>
-
-    <div class="toggle" onclick="showSignup()">
-      Don’t have an account? <span>Sign up</span>
-    </div>
+    <div class="toggle" onclick="showSignup()">No account? <span>Sign up</span></div>
   </div>
 
-  <!-- SIGN UP -->
   <div id="signup" class="hidden">
     <h2>Sign Up</h2>
-    <input id="signUser" type="text" placeholder="Username" />
-    <input id="signEmail" type="email" placeholder="Email" />
-    <input id="signPass" type="password" placeholder="Password" />
+    <input id="signUser" placeholder="Username">
+    <input id="signEmail" placeholder="Email">
+    <input id="signPass" type="password" placeholder="Password">
     <button onclick="signup()">Create Account</button>
     <div id="signError" class="error"></div>
-
-    <div class="toggle" onclick="showLogin()">
-      Already have an account? <span>Login</span>
-    </div>
+    <div class="toggle" onclick="showLogin()">Have an account? <span>Login</span></div>
   </div>
 
 </div>
 
 <script>
   function showSignup() {
-    document.getElementById("login").classList.add("hidden");
-    document.getElementById("signup").classList.remove("hidden");
+    login.classList.add("hidden");
+    signup.classList.remove("hidden");
   }
 
   function showLogin() {
-    document.getElementById("signup").classList.add("hidden");
-    document.getElementById("login").classList.remove("hidden");
+    signup.classList.add("hidden");
+    login.classList.remove("hidden");
   }
 
   function signup() {
-    const user = signUser.value.trim();
-    const email = signEmail.value.trim();
-    const pass = signPass.value.trim();
-    const error = document.getElementById("signError");
-
-    if (!user || !email || !pass) {
-      error.innerText = "All fields are required.";
-      error.style.display = "block";
+    if (!signUser.value || !signEmail.value || !signPass.value) {
+      signError.innerText = "All fields required.";
+      signError.style.display = "block";
       return;
     }
 
-    localStorage.setItem("blox2d_user", user);
-    localStorage.setItem("blox2d_pass", pass);
+    localStorage.setItem("blox_user", signUser.value);
+    localStorage.setItem("blox_email", signEmail.value);
+    localStorage.setItem("blox_pass", signPass.value);
 
     window.location.href = "index.html";
   }
 
   function login() {
-    const user = loginUser.value.trim();
-    const pass = loginPass.value.trim();
-    const error = document.getElementById("loginError");
-
-    const savedUser = localStorage.getItem("blox2d_user");
-    const savedPass = localStorage.getItem("blox2d_pass");
-
-    if (user !== savedUser || pass !== savedPass) {
-      error.innerText = "Invalid username or password.";
-      error.style.display = "block";
+    if (
+      loginUser.value !== localStorage.getItem("blox_user") ||
+      loginPass.value !== localStorage.getItem("blox_pass")
+    ) {
+      loginError.innerText = "Invalid login.";
+      loginError.style.display = "block";
       return;
     }
 
@@ -167,4 +141,3 @@
 
 </body>
 </html>
-
