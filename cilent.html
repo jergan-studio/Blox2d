@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Blox2D - Client</title>
+<style>
+body{margin:0;background:#000;color:white;font-family:Arial}
+header{padding:15px;background:#121217}
+.box{display:flex;justify-content:center;align-items:center;height:90vh}
+</style>
+</head>
+<body>
+
+<header>🎮 Game Client</header>
+
+<div class="box" id="game"></div>
+
+<script>
+const id=new URLSearchParams(location.search).get("id");
+const games=JSON.parse(localStorage.getItem("blox_games")||"[]");
+const g=games.find(x=>x.id===id);
+
+game.innerHTML=g?`
+<h2>${g.name}</h2>
+<p>By ${g.author}</p>
+<pre>${g.script}</pre>
+<p>(Engine coming soon)</p>
+`:"Game not found";
+</script>
+
+</body>
+</html>
