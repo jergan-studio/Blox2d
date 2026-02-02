@@ -1,80 +1,73 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Blox2D - Studio</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0d0d0f;
-      color: white;
-    }
-
-    header {
-      padding: 15px;
-      background: #121217;
-      font-size: 20px;
-      font-weight: bold;
-      text-align: center;
-      border-bottom: 1px solid #222;
-    }
-
-    .container {
-      display: flex;
-      flex-direction: column;
-      max-width: 900px;
-      margin: 20px auto;
-    }
-
-    textarea {
-      width: 100%;
-      height: 300px;
-      background: #0d0d12;
-      color: #0f0;
-      border: 1px solid #333;
-      font-family: monospace;
-      padding: 10px;
-      border-radius: 6px;
-      resize: vertical;
-      margin-bottom: 10px;
-    }
-
-    button {
-      padding: 10px 15px;
-      margin-bottom: 20px;
-      background: #4da6ff;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      color: black;
-    }
-
-    #gid {
-      color: #4da6ff;
-      margin-bottom: 20px;
-    }
-
-    .tutorials {
-      background: #222;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      color: #ccc;
-    }
-
-    .tutorials h3 {
-      color: #4da6ff;
-      margin-top: 0;
-    }
-
-    .tutorials pre {
-      background: #111;
-      padding: 8px;
-      border-radius: 6px;
-      overflow-x: auto;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blox2D Studio</title>
+<style>
+body {
+  margin:0;
+  font-family:Arial;
+  background:#0d0d0f;
+  color:white;
+}
+header {
+  padding:15px;
+  background:#121217;
+  text-align:center;
+  font-weight:bold;
+  font-size:20px;
+}
+.container {
+  display:flex;
+  max-width:1200px;
+  margin:20px auto;
+  gap:20px;
+}
+.sidebar {
+  width:220px;
+  background:#15151c;
+  padding:15px;
+  border-radius:8px;
+  flex-shrink:0;
+}
+.sidebar button {
+  width:100%;
+  margin-top:10px;
+  padding:10px;
+  background:#4da6ff;
+  border:none;
+  cursor:pointer;
+  border-radius:6px;
+  font-weight:bold;
+  color:black;
+}
+.canvas-container {
+  flex:1;
+  background:#111;
+  border-radius:8px;
+  padding:10px;
+}
+#canvas {
+  background:#222;
+  width:100%;
+  height:500px;
+  display:block;
+  border-radius:6px;
+  cursor:pointer;
+}
+.tutorials {
+  background:#222;
+  color:#ccc;
+  padding:10px;
+  border-radius:8px;
+  margin-bottom:20px;
+}
+.tutorials h3 {
+  color:#4da6ff;
+  margin-top:0;
+}
+</style>
 </head>
 <body>
 
@@ -82,57 +75,126 @@
 
 <div class="container">
 
-  <!-- Tutorials Section -->
-  <div class="tutorials">
-    <h3>Tutorials & Tips</h3>
-    <p>Welcome to Blox2D Studio! Start by editing your game script below.</p>
-    <ul>
-      <li>Set player speed: <pre>player.speed = 5</pre></li>
-      <li>Add jump: <pre>player.jumpHeight = 10</pre></li>
-      <li>Publish your game using the 🚀 Publish button</li>
-      <li>Share the Game ID to play in the client!</li>
-      <li>Use arrow keys to move the player in the client</li>
-    </ul>
+  <!-- Sidebar / Tools -->
+  <div class="sidebar">
+    <h3>Tools</h3>
+    <button onclick="currentTool='select'">Select/Move</button>
+    <button onclick="currentTool='scale'">Scale</button>
+    <button onclick="currentTool='rotate'">Rotate</button>
+    <button onclick="addBlock()">Add Block</button>
+    <button onclick="publish()">🚀 Publish</button>
+    <p id="gid" style="color:#4da6ff;margin-top:10px"></p>
   </div>
 
-  <!-- Game Script Editor -->
-  <textarea id="script">// BloxScript
-when start
-  player.speed = 5
-end
-  </textarea>
-
-  <!-- Publish -->
-  <button onclick="publish()">🚀 Publish Game</button>
-  <div id="gid"></div>
-
+  <!-- Canvas + Tutorials -->
+  <div class="canvas-container">
+    <div class="tutorials">
+      <h3>Tutorials & Tips</h3>
+      <ul>
+        <li>Use <b>Select/Move</b> to drag blocks</li>
+        <li>Use <b>Scale</b> to resize blocks</li>
+        <li>Use <b>Rotate</b> to rotate blocks</li>
+        <li>Click <b>Add Block</b> to place a new block</li>
+        <li>Click <b>Publish</b> to generate a Game ID</li>
+      </ul>
+    </div>
+    <canvas id="canvas"></canvas>
+  </div>
 </div>
 
 <script>
-if(!localStorage.getItem("blox_user")) {
-  window.location.href = "login.html";
+if(!localStorage.getItem("blox_user")) location.href="login.html";
+
+// Canvas setup
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+let objects = [];
+let currentTool = "select";
+let selected = null;
+let offsetX, offsetY;
+
+// Mouse state
+let mouse = {x:0,y:0,down:false};
+
+canvas.addEventListener("mousedown",(e)=>{
+  mouse.down = true;
+  const rect = canvas.getBoundingClientRect();
+  mouse.x = e.clientX - rect.left;
+  mouse.y = e.clientY - rect.top;
+
+  if(currentTool==='select'){
+    selected = objects.find(o=>mouse.x>=o.x && mouse.x<=o.x+o.w &&
+                                mouse.y>=o.y && mouse.y<=o.y+o.h);
+    if(selected){
+      offsetX = mouse.x - selected.x;
+      offsetY = mouse.y - selected.y;
+    }
+  }
+});
+
+canvas.addEventListener("mousemove",(e)=>{
+  const rect = canvas.getBoundingClientRect();
+  mouse.x = e.clientX - rect.left;
+  mouse.y = e.clientY - rect.top;
+
+  if(mouse.down && selected){
+    if(currentTool==='select'){
+      selected.x = mouse.x - offsetX;
+      selected.y = mouse.y - offsetY;
+    } else if(currentTool==='scale'){
+      selected.w = Math.max(10, mouse.x - selected.x);
+      selected.h = Math.max(10, mouse.y - selected.y);
+    } else if(currentTool==='rotate'){
+      selected.rotation = Math.atan2(mouse.y - (selected.y+selected.h/2), mouse.x - (selected.x+selected.w/2));
+    }
+  }
+});
+
+canvas.addEventListener("mouseup",()=>{mouse.down=false; selected=null;});
+
+// Add new block
+function addBlock(){
+  objects.push({x:50,y:50,w:50,h:50,color:"#4da6ff",rotation:0,name:"block"});
 }
 
+// Draw loop
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  objects.forEach(o=>{
+    ctx.save();
+    ctx.translate(o.x+o.w/2,o.y+o.h/2);
+    ctx.rotate(o.rotation);
+    ctx.fillStyle=o.color;
+    ctx.fillRect(-o.w/2,-o.h/2,o.w,o.h);
+    ctx.restore();
+  });
+  requestAnimationFrame(draw);
+}
+draw();
+
+// Publish function
 function publish(){
   const name = prompt("Enter Game Name:");
   if(!name) return;
+  const gid = "G-"+Math.floor(Math.random()*1000000);
 
-  const games = JSON.parse(localStorage.getItem("blox_games") || "[]");
-  const gid = "G-" + Math.floor(Math.random()*1000000);
-
-  games.push({
+  // Save objects and default player speed
+  const gameData = {
     id: gid,
     name: name,
     author: localStorage.getItem("blox_user"),
-    script: document.getElementById("script").value
-  });
+    script: `when start
+player.speed = 5
+end`,
+    objects: objects.map(o=>({name:o.name,x:o.x,y:o.y,w:o.w,h:o.h,color:o.color}))
+  };
 
-  localStorage.setItem("blox_games", JSON.stringify(games));
-
-  document.getElementById("gid").innerText = "Published! Game ID: " + gid;
+  const games = JSON.parse(localStorage.getItem("blox_games")||"[]");
+  games.push(gameData);
+  localStorage.setItem("blox_games",JSON.stringify(games));
+  document.getElementById("gid").innerText = "Published! Game ID: "+gid;
 }
 </script>
 
 </body>
 </html>
-
