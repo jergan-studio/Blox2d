@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Blox2D — Studio</title>
+  <title>Blox2D — Profile</title>
   <style>
     body{margin:0;font-family:Arial;background:#0d0d0f;color:white}
-    header{padding:15px;background:#121217;border-bottom:1px solid #222}
-    .workspace{display:flex;height:calc(100vh - 60px)}
-    .sidebar{width:220px;background:#15151c;padding:15px}
-    .editor{flex:1;padding:20px}
-    textarea{width:100%;height:100%;background:#0d0d12;color:#0f0;
-      border:1px solid #333;font-family:monospace}
+    .box{max-width:500px;margin:80px auto;background:#15151c;
+      padding:30px;border-radius:12px}
+    button{margin-top:20px;padding:10px;background:#ff4d4d;border:0;font-weight:bold}
   </style>
 </head>
 <body>
@@ -20,24 +17,22 @@ if(!localStorage.getItem("blox_user")){
 }
 </script>
 
-<header>
-  🧰 Blox2D Studio
-</header>
-
-<div class="workspace">
-  <div class="sidebar">
-    <p>Objects</p>
-    <button>➕ Add Block</button>
-    <button>➕ Add Player</button>
-  </div>
-
-  <div class="editor">
-    <textarea>// BloxScript
-when start
-  player.speed = 5
-end</textarea>
-  </div>
+<div class="box">
+  <h2>Profile</h2>
+  <p><b>User:</b> <span id="u"></span></p>
+  <p><b>Email:</b> <span id="e"></span></p>
+  <button onclick="logout()">Logout</button>
 </div>
+
+<script>
+u.innerText=localStorage.getItem("blox_user");
+e.innerText=localStorage.getItem("blox_email");
+
+function logout(){
+  localStorage.clear();
+  window.location.href="login.html";
+}
+</script>
 
 </body>
 </html>
