@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Blox2D - Games</title>
+<style>
+body{margin:0;font-family:Arial;background:#0d0d0f;color:white}
+header{padding:20px;background:#121217}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:20px;padding:30px}
+.card{background:#15151c;padding:20px;border-radius:10px}
+button{margin-top:10px;background:#4da6ff;border:0;padding:8px}
+</style>
+</head>
+<body>
+
+<script>
+if(!localStorage.getItem("blox_user")) location.href="login.html";
+</script>
+
+<header>🎮 Games</header>
+
+<div class="grid" id="g"></div>
+
+<script>
+const games=JSON.parse(localStorage.getItem("blox_games")||"[]");
+if(!games.length) g.innerHTML="No games yet.";
+
+games.forEach(x=>{
+  g.innerHTML+=`
+  <div class="card">
+    <h3>${x.name}</h3>
+    <p>By ${x.author}</p>
+    <button onclick="play('${x.id}')">Play</button>
+  </div>`;
+});
+
+function play(id){
+  location.href=`client.html?id=${id}`;
+}
+</script>
+
+</body>
+</html>
