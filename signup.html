@@ -1,40 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Blox2D — Sign Up</title>
-  <style>
-    body{margin:0;height:100vh;display:flex;align-items:center;justify-content:center;
-    background:#0d0d0f;color:white;font-family:Arial}
-    .box{background:#15151c;padding:30px;border-radius:12px;width:340px}
-    input,button{width:100%;padding:12px;margin-top:10px}
-    button{background:#4da6ff;border:0;font-weight:bold;cursor:pointer}
-    .error{color:#ff4d4d;font-size:13px;display:none;text-align:center}
-  </style>
+<title>Blox2D - Sign Up</title>
+<style>
+body{margin:0;height:100vh;display:flex;justify-content:center;align-items:center;
+background:#0d0d0f;color:white;font-family:Arial}
+.box{background:#15151c;padding:30px;border-radius:12px;width:320px}
+input,button{width:100%;padding:12px;margin-top:10px}
+button{background:#4da6ff;border:0;font-weight:bold}
+.error{color:#ff4d4d;font-size:13px;display:none;text-align:center}
+</style>
 </head>
 <body>
 
 <div class="box">
-  <h2>Sign Up</h2>
-  <input id="user" placeholder="Username">
-  <input id="email" placeholder="Email">
-  <input id="pass" type="password" placeholder="Password">
-  <button onclick="signup()">Create Account</button>
-  <div id="err" class="error"></div>
+<h2>Sign Up</h2>
+<input id="u" placeholder="Username">
+<input id="e" placeholder="Email">
+<input id="p" type="password" placeholder="Password">
+<button onclick="signup()">Create</button>
+<div id="err" class="error"></div>
 </div>
 
 <script>
 function signup(){
-  if(!user.value||!email.value||!pass.value){
+  if(!u.value||!e.value||!p.value){
     err.innerText="All fields required";
     err.style.display="block";
     return;
   }
-
-  localStorage.setItem("blox_user",user.value);
-  localStorage.setItem("blox_email",email.value);
-  localStorage.setItem("blox_pass",pass.value);
-
-  window.location.href="index.html";
+  localStorage.setItem("blox_user",u.value);
+  localStorage.setItem("blox_email",e.value);
+  localStorage.setItem("blox_pass",p.value);
+  location.href="index.html";
 }
 </script>
 
