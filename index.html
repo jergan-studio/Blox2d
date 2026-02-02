@@ -1,67 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
   <title>Blox2D — Home</title>
-
   <style>
-    body {
-      margin: 0;
-      font-family: Arial;
-      background: #0d0d0f;
-      color: white;
-    }
-
-    header {
-      background: #121217;
-      padding: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #222;
-    }
-
-    a {
-      color: #4da6ff;
-      text-decoration: none;
-      margin-left: 15px;
-    }
-
-    .hero {
-      text-align: center;
-      padding: 100px 20px;
-    }
+    body{margin:0;font-family:Arial;background:#0d0d0f;color:white}
+    header{padding:20px;background:#121217;display:flex;justify-content:space-between}
+    a{color:#4da6ff;text-decoration:none;margin-left:15px}
+    .hero{text-align:center;padding:80px}
   </style>
 </head>
 <body>
 
 <script>
-  if (!localStorage.getItem("blox_user")) {
-    window.location.href = "login.html";
-  }
+const user = localStorage.getItem("blox_user");
+const ADMINS = ["jergan-studio","admin"];
+
+if(!user) window.location.href="login.html";
 </script>
 
 <header>
-  <h2>Blox2D</h2>
+  <b>Blox2D</b>
   <nav>
+    <a href="studio.html">Studio</a>
     <a href="profile.html">Profile</a>
     <a href="#" onclick="logout()">Logout</a>
   </nav>
 </header>
 
 <div class="hero">
-  <h1>Create. Script. Play.</h1>
-  <p>Welcome to Blox2D, <span id="user"></span>.</p>
+  <h1>Welcome, <span id="u"></span></h1>
+  <p id="admin"></p>
 </div>
 
 <script>
-  document.getElementById("user").innerText =
-    localStorage.getItem("blox_user");
+u.innerText=user;
+if(ADMINS.includes(user)){
+  admin.innerText="🛡 Admin Account";
+}
 
-  function logout() {
-    localStorage.clear();
-    window.location.href = "login.html";
-  }
+function logout(){
+  localStorage.clear();
+  window.location.href="login.html";
+}
 </script>
 
 </body>
