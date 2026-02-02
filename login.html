@@ -1,143 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Blox2D — Login</title>
-
   <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      font-family: Arial, Helvetica, sans-serif;
-      background: radial-gradient(circle at top, #1a1a2e, #0d0d0f);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .box {
-      background: #15151c;
-      border: 1px solid #222;
-      border-radius: 12px;
-      width: 360px;
-      padding: 30px;
-    }
-
-    h2 {
-      text-align: center;
-      color: #4da6ff;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      background: #0d0d12;
-      border: 1px solid #333;
-      border-radius: 6px;
-      color: white;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 15px;
-      background: #4da6ff;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      color: black;
-    }
-
-    .error {
-      margin-top: 10px;
-      font-size: 13px;
-      color: #ff4d4d;
-      text-align: center;
-      display: none;
-    }
-
-    .toggle {
-      text-align: center;
-      margin-top: 15px;
-      font-size: 13px;
-      color: #aaa;
-      cursor: pointer;
-    }
-
-    .toggle span {
-      color: #4da6ff;
-    }
-
-    .hidden { display: none; }
+    body{margin:0;height:100vh;display:flex;align-items:center;justify-content:center;
+    background:#0d0d0f;color:white;font-family:Arial}
+    .box{background:#15151c;padding:30px;border-radius:12px;width:340px}
+    input,button{width:100%;padding:12px;margin-top:10px}
+    button{background:#4da6ff;border:0;font-weight:bold;cursor:pointer}
+    .error{color:#ff4d4d;font-size:13px;display:none;text-align:center}
+    a{color:#4da6ff;text-decoration:none;font-size:13px}
   </style>
 </head>
 <body>
 
 <div class="box">
-
-  <div id="login">
-    <h2>Login</h2>
-    <input id="loginUser" placeholder="Username">
-    <input id="loginPass" type="password" placeholder="Password">
-    <button onclick="login()">Login</button>
-    <div id="loginError" class="error"></div>
-    <div class="toggle" onclick="showSignup()">No account? <span>Sign up</span></div>
-  </div>
-
-  <div id="signup" class="hidden">
-    <h2>Sign Up</h2>
-    <input id="signUser" placeholder="Username">
-    <input id="signEmail" placeholder="Email">
-    <input id="signPass" type="password" placeholder="Password">
-    <button onclick="signup()">Create Account</button>
-    <div id="signError" class="error"></div>
-    <div class="toggle" onclick="showLogin()">Have an account? <span>Login</span></div>
-  </div>
-
+  <h2>Login</h2>
+  <input id="user" placeholder="Username">
+  <input id="pass" type="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+  <div id="err" class="error"></div>
+  <p><a href="signup.html">Create account</a></p>
 </div>
 
 <script>
-  function showSignup() {
-    login.classList.add("hidden");
-    signup.classList.remove("hidden");
+function login(){
+  if(
+    user.value!==localStorage.getItem("blox_user") ||
+    pass.value!==localStorage.getItem("blox_pass")
+  ){
+    err.innerText="Invalid login";
+    err.style.display="block";
+    return;
   }
-
-  function showLogin() {
-    signup.classList.add("hidden");
-    login.classList.remove("hidden");
-  }
-
-  function signup() {
-    if (!signUser.value || !signEmail.value || !signPass.value) {
-      signError.innerText = "All fields required.";
-      signError.style.display = "block";
-      return;
-    }
-
-    localStorage.setItem("blox_user", signUser.value);
-    localStorage.setItem("blox_email", signEmail.value);
-    localStorage.setItem("blox_pass", signPass.value);
-
-    window.location.href = "index.html";
-  }
-
-  function login() {
-    if (
-      loginUser.value !== localStorage.getItem("blox_user") ||
-      loginPass.value !== localStorage.getItem("blox_pass")
-    ) {
-      loginError.innerText = "Invalid login.";
-      loginError.style.display = "block";
-      return;
-    }
-
-    window.location.href = "index.html";
-  }
+  window.location.href="index.html";
+}
 </script>
 
 </body>
 </html>
+
