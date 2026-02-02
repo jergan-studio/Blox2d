@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blox2D — Login</title>
+
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(circle at top, #1a1a2e, #0d0d0f);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .box {
+      background: #15151c;
+      border: 1px solid #222;
+      border-radius: 12px;
+      width: 350px;
+      padding: 30px;
+      box-shadow: 0 0 40px rgba(0,0,0,0.4);
+    }
+
+    h2 {
+      margin-top: 0;
+      text-align: center;
+      color: #4da6ff;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      background: #0d0d12;
+      border: 1px solid #333;
+      border-radius: 6px;
+      color: white;
+      font-size: 14px;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #4da6ff;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 15px;
+      background: #4da6ff;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      cursor: pointer;
+      color: black;
+      font-weight: bold;
+    }
+
+    .toggle {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 13px;
+      color: #aaa;
+      cursor: pointer;
+    }
+
+    .toggle span {
+      color: #4da6ff;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="box">
+
+  <!-- LOGIN -->
+  <div id="login">
+    <h2>Login</h2>
+    <input type="text" placeholder="Username" />
+    <input type="password" placeholder="Password" />
+    <button>Login</button>
+
+    <div class="toggle" onclick="showSignup()">
+      Don’t have an account? <span>Sign up</span>
+    </div>
+  </div>
+
+  <!-- SIGN UP -->
+  <div id="signup" class="hidden">
+    <h2>Sign Up</h2>
+    <input type="text" placeholder="Username" />
+    <input type="email" placeholder="Email" />
+    <input type="password" placeholder="Password" />
+    <button>Create Account</button>
+
+    <div class="toggle" onclick="showLogin()">
+      Already have an account? <span>Login</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function showSignup() {
+    document.getElementById("login").classList.add("hidden");
+    document.getElementById("signup").classList.remove("hidden");
+  }
+
+  function showLogin() {
+    document.getElementById("signup").classList.add("hidden");
+    document.getElementById("login").classList.remove("hidden");
+  }
+</script>
+
+</body>
+</html>
