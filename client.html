@@ -1,34 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Blox2D — Game Client</title>
-  <style>
-    body {
-      margin:0;
-      font-family: Arial;
-      background: #000;
-      color: white;
-      display:flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    header {
-      padding:15px;
-      background:#121217;
-      width:100%;
-      text-align:center;
-      font-weight:bold;
-    }
-    #canvas {
-      background:#111;
-      margin-top:10px;
-      border:1px solid #333;
-    }
-    #scoreMsg {
-      color: #4da6ff;
-      margin-top:10px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blox2D Client</title>
+<style>
+body {
+  margin:0;
+  font-family:Arial;
+  background:#000;
+  color:white;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+header {
+  padding:15px;
+  background:#121217;
+  width:100%;
+  text-align:center;
+  font-weight:bold;
+}
+#canvas {
+  background:#111;
+  margin-top:10px;
+  border:1px solid #333;
+}
+#scoreMsg {
+  color: #4da6ff;
+  margin-top:10px;
+}
+</style>
 </head>
 <body>
 
@@ -37,121 +39,99 @@
 <div id="scoreMsg"></div>
 
 <script>
-/***********************
-  Load Game
-************************/
+// Load Game by ID
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
-const games = JSON.parse(localStorage.getItem("blox_games") || "[]");
-const game = games.find(g => g.id === id);
+const games = JSON.parse(localStorage.getItem("blox_games")||"[]");
+const game = games.find(g=>g.id===id);
 
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const scoreMsg = document.getElementById("scoreMsg");
 
 if(!game){
-  ctx.fillStyle = "#fff";
-  ctx.fillText("Game not found!", 50, 50);
+  ctx.fillStyle="#fff";
+  ctx.fillText("Game not found!", 50,50);
   throw new Error("Game not found");
 }
 
 /***********************
-  Initialize
+  Game State
 ************************/
-let player = {
-  x:100, y:400, w:30, h:30,
-  speed:5, jumpHeight:12,
-  color:"#4da6ff",
-  velY:0
-};
-
+let player = {x:100,y:400,w:30,h:30,color:"#4da6ff",speed:5,jumpHeight:12,velY:0,onGround:false};
 let gravity = 1;
-let objects = [];
 let score = 0;
 let messages = [];
 let keys = {};
+let objects = game.objects.map(o=>({
+  name:o.name,
+  x:o.x,
+  y:o.y,
+  w:o.w,
+  h:o.h,
+  color:o.color,
+  rotation:o.rotation||0
+}));
 
-// Parse BloxScript
-const lines = game.script.split("\n").map(l => l.trim());
-
-// Very simple parser for start block and commands
-let inStart = false;
-lines.forEach(line => {
-  if(line.startsWith("//") || line==="") return;
-  if(line.startsWith("when start")) { inStart=true; return; }
-  if(line==="end") { inStart=false; return; }
-
+/***********************
+  Parse Script
+************************/
+const lines = game.script.split("\n").map(l=>l.trim());
+let inStart=false;
+lines.forEach(line=>{
+  if(line.startsWith("//")||line==="") return;
+  if(line.startsWith("when start")){inStart=true; return;}
+  if(line==="end"){inStart=false; return;}
   if(inStart){
-    if(line.startsWith("player.speed")) player.speed = parseInt(line.split("=")[1]);
-    if(line.startsWith("player.jumpHeight")) player.jumpHeight = parseInt(line.split("=")[1]);
-    if(line.startsWith("player.color")) player.color = line.split('"')[1];
-    if(line.startsWith("player.size")) {
-      const vals = line.split("=")[1].split(",");
-      player.w=parseInt(vals[0]);
-      player.h=parseInt(vals[1]);
-    }
-    if(line.startsWith("spawn.object")){
-      const parts = line.split(/[\(\),]+/);
-      const name = parts[1].replace(/["]/g,"");
-      const x = parseInt(parts[2]);
-      const y = parseInt(parts[3]);
-      objects.push({name,x,y,w:50,h:50,color:"#888"});
-    }
-    if(line.startsWith("gravity")) gravity = parseFloat(line.split("=")[1]);
-    if(line.startsWith("score")) score = parseInt(line.split("=")[1]);
+    if(line.startsWith("player.speed")) player.speed=parseInt(line.split("=")[1]);
+    if(line.startsWith("player.jumpHeight")) player.jumpHeight=parseInt(line.split("=")[1]);
+    if(line.startsWith("player.color")) player.color=line.split('"')[1];
+    if(line.startsWith("gravity")) gravity=parseFloat(line.split("=")[1]);
+    if(line.startsWith("score")) score=parseInt(line.split("=")[1]);
   }
 });
 
 /***********************
-  Key Event Triggers
+  Key Events
 ************************/
-window.addEventListener("keydown", e => keys[e.key]=true);
-window.addEventListener("keyup", e => keys[e.key]=false);
+window.addEventListener("keydown",e=>keys[e.key]=true);
+window.addEventListener("keyup",e=>keys[e.key]=false);
 
 /***********************
-  Utility Functions
+  Utility
 ************************/
-function message(text){
-  messages.push({text, time:120});
-}
-
+function message(text){messages.push({text,time:120});}
 function collide(a,b){
-  return a.x < b.x+b.w && a.x+a.w > b.x &&
-         a.y < b.y+b.h && a.y+a.h > b.y;
+  return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
 }
 
 /***********************
   Game Loop
 ************************/
 function update(){
-  // Player Movement
+  // Player movement
   if(keys["ArrowLeft"]) player.x -= player.speed;
   if(keys["ArrowRight"]) player.x += player.speed;
-
-  // Jump
-  if(keys["ArrowUp"] && player.onGround) {
-    player.velY = -player.jumpHeight;
-    player.onGround = false;
-  }
+  if(keys["ArrowUp"] && player.onGround){player.velY=-player.jumpHeight; player.onGround=false;}
 
   // Gravity
   player.velY += gravity;
   player.y += player.velY;
 
-  // Collision with floor
-  if(player.y + player.h > canvas.height){
-    player.y = canvas.height - player.h;
+  // Floor collision
+  if(player.y+player.h > canvas.height){
+    player.y = canvas.height-player.h;
     player.velY = 0;
     player.onGround = true;
   }
 
-  // Collision with objects
-  objects.forEach(obj => {
-    if(collide(player,obj)){
+  // Object collisions
+  objects.forEach(o=>{
+    if(collide(player,o)){
       score += 10;
-      message("Hit "+obj.name+"! +10 score");
+      message("Hit "+o.name+"! +10 score");
       // Simple rebound
-      player.y = obj.y - player.h;
+      player.y = o.y - player.h;
       player.velY = 0;
       player.onGround = true;
     }
@@ -162,27 +142,30 @@ function update(){
 }
 
 /***********************
-  Draw Function
+  Draw
 ************************/
 function draw(){
-  ctx.fillStyle="#111";
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-
-  // Draw player
-  ctx.fillStyle=player.color;
-  ctx.fillRect(player.x,player.y,player.w,player.h);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
 
   // Draw objects
   objects.forEach(o=>{
+    ctx.save();
+    ctx.translate(o.x+o.w/2,o.y+o.h/2);
+    ctx.rotate(o.rotation);
     ctx.fillStyle=o.color;
-    ctx.fillRect(o.x,o.y,o.w,o.h);
+    ctx.fillRect(-o.w/2,-o.h/2,o.w,o.h);
+    ctx.restore();
   });
+
+  // Draw player
+  ctx.fillStyle = player.color;
+  ctx.fillRect(player.x,player.y,player.w,player.h);
 
   // Draw messages
   let y=30;
   messages = messages.filter(m=>{
     ctx.fillStyle="#4da6ff";
-    ctx.fillText(m.text, 10, y);
+    ctx.fillText(m.text,10,y);
     y+=20;
     m.time--;
     return m.time>0;
@@ -190,10 +173,9 @@ function draw(){
 
   // Draw score
   ctx.fillStyle="#4da6ff";
-  ctx.fillText("Score: "+score, canvas.width-120,30);
+  ctx.fillText("Score: "+score,canvas.width-120,30);
 }
 
-// Start game loop
 update();
 </script>
 
