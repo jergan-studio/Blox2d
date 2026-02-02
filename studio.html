@@ -1,50 +1,138 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Blox2D - Studio</title>
-<style>
-body{margin:0;font-family:Arial;background:#0d0d0f;color:white}
-header{padding:15px;background:#121217}
-textarea{width:100%;height:80vh;background:#0d0d12;color:#0f0;
-border:1px solid #333;font-family:monospace;padding:10px}
-button{padding:10px;margin-top:10px;background:#4da6ff;border:0}
-</style>
+  <title>Blox2D - Studio</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0d0d0f;
+      color: white;
+    }
+
+    header {
+      padding: 15px;
+      background: #121217;
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+      border-bottom: 1px solid #222;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      max-width: 900px;
+      margin: 20px auto;
+    }
+
+    textarea {
+      width: 100%;
+      height: 300px;
+      background: #0d0d12;
+      color: #0f0;
+      border: 1px solid #333;
+      font-family: monospace;
+      padding: 10px;
+      border-radius: 6px;
+      resize: vertical;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 10px 15px;
+      margin-bottom: 20px;
+      background: #4da6ff;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      color: black;
+    }
+
+    #gid {
+      color: #4da6ff;
+      margin-bottom: 20px;
+    }
+
+    .tutorials {
+      background: #222;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      color: #ccc;
+    }
+
+    .tutorials h3 {
+      color: #4da6ff;
+      margin-top: 0;
+    }
+
+    .tutorials pre {
+      background: #111;
+      padding: 8px;
+      border-radius: 6px;
+      overflow-x: auto;
+    }
+  </style>
 </head>
 <body>
 
-<script>
-if(!localStorage.getItem("blox_user")) location.href="login.html";
-</script>
+<header>🧰 Blox2D Studio</header>
 
-<header>🧰 Studio</header>
+<div class="container">
 
-<textarea id="script">// BloxScript
+  <!-- Tutorials Section -->
+  <div class="tutorials">
+    <h3>Tutorials & Tips</h3>
+    <p>Welcome to Blox2D Studio! Start by editing your game script below.</p>
+    <ul>
+      <li>Set player speed: <pre>player.speed = 5</pre></li>
+      <li>Add jump: <pre>player.jumpHeight = 10</pre></li>
+      <li>Publish your game using the 🚀 Publish button</li>
+      <li>Share the Game ID to play in the client!</li>
+      <li>Use arrow keys to move the player in the client</li>
+    </ul>
+  </div>
+
+  <!-- Game Script Editor -->
+  <textarea id="script">// BloxScript
 when start
   player.speed = 5
-end</textarea>
+end
+  </textarea>
 
-<button onclick="publish()">🚀 Publish</button>
-<p id="id"></p>
+  <!-- Publish -->
+  <button onclick="publish()">🚀 Publish Game</button>
+  <div id="gid"></div>
+
+</div>
 
 <script>
+if(!localStorage.getItem("blox_user")) {
+  window.location.href = "login.html";
+}
+
 function publish(){
-  const name=prompt("Game name?");
+  const name = prompt("Enter Game Name:");
   if(!name) return;
 
-  const games=JSON.parse(localStorage.getItem("blox_games")||"[]");
-  const gid="G-"+Math.floor(Math.random()*1000000);
+  const games = JSON.parse(localStorage.getItem("blox_games") || "[]");
+  const gid = "G-" + Math.floor(Math.random()*1000000);
 
   games.push({
-    id:gid,
-    name:name,
-    author:localStorage.getItem("blox_user"),
-    script:script.value
+    id: gid,
+    name: name,
+    author: localStorage.getItem("blox_user"),
+    script: document.getElementById("script").value
   });
 
-  localStorage.setItem("blox_games",JSON.stringify(games));
-  id.innerText="Published! Game ID: "+gid;
+  localStorage.setItem("blox_games", JSON.stringify(games));
+
+  document.getElementById("gid").innerText = "Published! Game ID: " + gid;
 }
 </script>
 
 </body>
 </html>
+
