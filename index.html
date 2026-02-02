@@ -1,46 +1,40 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Blox2D — Home</title>
-  <style>
-    body{margin:0;font-family:Arial;background:#0d0d0f;color:white}
-    header{padding:20px;background:#121217;display:flex;justify-content:space-between}
-    a{color:#4da6ff;text-decoration:none;margin-left:15px}
-    .hero{text-align:center;padding:80px}
-  </style>
+<title>Blox2D - Home</title>
+<style>
+body{margin:0;font-family:Arial;background:#0d0d0f;color:white}
+header{background:#121217;padding:20px;display:flex;justify-content:space-between}
+a{color:#4da6ff;text-decoration:none;margin-left:15px}
+.hero{text-align:center;padding:80px}
+</style>
 </head>
 <body>
 
 <script>
-const user = localStorage.getItem("blox_user");
-const ADMINS = ["jergan-studio","admin"];
-
-if(!user) window.location.href="login.html";
+if(!localStorage.getItem("blox_user")) location.href="login.html";
 </script>
 
 <header>
-  <b>Blox2D</b>
-  <nav>
-    <a href="studio.html">Studio</a>
-    <a href="profile.html">Profile</a>
-    <a href="#" onclick="logout()">Logout</a>
-  </nav>
+<b>Blox2D</b>
+<nav>
+<a href="studio.html">Studio</a>
+<a href="games.html">Games</a>
+<a href="profile.html">Profile</a>
+<a href="#" onclick="logout()">Logout</a>
+</nav>
 </header>
 
 <div class="hero">
-  <h1>Welcome, <span id="u"></span></h1>
-  <p id="admin"></p>
+<h1>Welcome, <span id="u"></span></h1>
+<p>Create • Script • Play</p>
 </div>
 
 <script>
-u.innerText=user;
-if(ADMINS.includes(user)){
-  admin.innerText="🛡 Admin Account";
-}
-
+u.innerText=localStorage.getItem("blox_user");
 function logout(){
   localStorage.clear();
-  window.location.href="login.html";
+  location.href="login.html";
 }
 </script>
 
