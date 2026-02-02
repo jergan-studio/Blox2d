@@ -9,6 +9,10 @@ body{margin:0;font-family:Arial;background:#000;color:white;display:flex;flex-di
 header{padding:15px;background:#121217;width:100%;text-align:center;font-weight:bold;}
 #canvas{background:#111;margin-top:10px;border:1px solid #333;}
 #scoreMsg{color:#4da6ff;margin-top:10px;}
+#chatContainer{width:800px;margin-top:10px;}
+#chatLog{height:100px;background:#111;color:#4da6ff;overflow-y:auto;padding:5px;border:1px solid #333;}
+#chatInput{width:700px;padding:5px;}
+#sendBtn{padding:5px;}
 </style>
 </head>
 <body>
@@ -16,25 +20,30 @@ header{padding:15px;background:#121217;width:100%;text-align:center;font-weight:
 <header>🎮 Blox2D Client (Multiplayer)</header>
 <canvas id="canvas" width="800" height="500"></canvas>
 <div id="scoreMsg"></div>
+<div id="chatContainer">
+  <div id="chatLog"></div>
+  <input type="text" id="chatInput" placeholder="Type message...">
+  <button id="sendBtn">Send</button>
+</div>
 
 <script>
-// Get game ID from URL
-const params = new URLSearchParams(window.location.search);
-const id = params.get("id");
-const games = JSON.parse(localStorage.getItem("blox_games")||"[]");
-const game = games.find(g=>g.id===id);
+// Load game
+const params=new URLSearchParams(window.location.search);
+const id=params.get("id");
+const games=JSON.parse(localStorage.getItem("blox_games")||"[]");
+const game=games.find(g=>g.id===id);
 if(!game){ alert("Game not found!"); throw new Error("Game not found"); }
 
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-const scoreMsg = document.getElementById("scoreMsg");
-
+// Canvas & state
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+const scoreMsg=document.getElementById("scoreMsg");
 let player={x:100,y:400,w:30,h:30,color:"#4da6ff",speed:5,jumpHeight:12,velY:0,onGround:false};
-let gravity=1,score=0,messages=[],keys={};
-let objects = game.objects.map(o=>({...o}));
+let gravity=1,score=0,messages=[],keys={},objects=game.objects.map(o=>({...o}));
+let otherPlayers={},playerID=null;
 
 // Parse script
-const lines = game.script.split("\n").map(l=>l.trim());
+const lines=game.script.split("\n").map(l=>l.trim());
 let inStart=false;
 lines.forEach(line=>{
   if(line.startsWith("//")||line==="") return;
@@ -53,16 +62,70 @@ lines.forEach(line=>{
 window.addEventListener("keydown",e=>keys[e.key]=true);
 window.addEventListener("keyup",e=>keys[e.key]=false);
 
-// Multiplayer setup
-const ws = new WebSocket("ws://localhost:8080");
-let playerID = null;
-let otherPlayers = {};
+// WebSocket multiplayer & chat
+const ws=new WebSocket("ws://localhost:8080");
+const chatLog=document.getElementById("chatLog");
+const chatInput=document.getElementById("chatInput");
+document.getElementById("sendBtn").onclick=()=>sendChat();
+chatInput.addEventListener("keydown",e=>{ if(e.key==='Enter') sendChat(); });
 
-ws.onopen = ()=>{
-  ws.send(JSON.stringify({type:'join', gameID:id, x:player.x, y:player.y}));
+ws.onopen=()=>ws.send(JSON.stringify({type:'join',gameID:id,x:player.x,y:player.y}));
+
+ws.onmessage=e=>{
+  const data=JSON.parse(e.data);
+  if(data.type==='joined') playerID=data.playerID;
+  if(data.type==='players') otherPlayers=data.players;
+  if(data.type==='chat'){
+    const p=data.chat.playerID===playerID ? "You" : data.chat.playerID;
+    chatLog.innerHTML += `<div><b>${p}:</b> ${data.chat.text}</div>`;
+    chatLog.scrollTop = chatLog.scrollHeight;
+  }
 };
 
-ws.onmessage = e=>{
-  const data = JSON.parse(e.data);
-  if(data.type==='joined') playerID=data.playerID;
-  if(data.type==='player
+function sendChat(){
+  const text=chatInput.value.trim();
+  if(!text) return;
+  ws.send(JSON.stringify({type:'chat',gameID:id,text}));
+  chatInput.value="";
+}
+
+function sendUpdate(){
+  if(playerID) ws.send(JSON.stringify({type:'update',gameID:id,x:player.x,y:player.y}));
+  requestAnimationFrame(sendUpdate);
+}
+sendUpdate();
+
+// Utilities
+function collide(a,b){return a.x<a.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y;}
+function message(text){messages.push({text,time:120});}
+
+// Game loop
+function update(){
+  if(keys["ArrowLeft"]) player.x -= player.speed;
+  if(keys["ArrowRight"]) player.x += player.speed;
+  if(keys["ArrowUp"] && player.onGround){player.velY=-player.jumpHeight;player.onGround=false;}
+  player.velY+=gravity;
+  player.y+=player.velY;
+  if(player.y+player.h>canvas.height){player.y=canvas.height-player.h;player.velY=0;player.onGround=true;}
+  objects.forEach(o=>{
+    if(collide(player,o)){score+=10; message("Hit "+o.name+"! +10 score"); player.y=o.y-player.h;player.velY=0;player.onGround=true;}
+  });
+  draw();
+  requestAnimationFrame(update);
+}
+
+// Draw
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  objects.forEach(o=>{ctx.save();ctx.translate(o.x+o.w/2,o.y+o.h/2);ctx.rotate(o.rotation);ctx.fillStyle=o.color;ctx.fillRect(-o.w/2,-o.h/2,o.w,o.h);ctx.restore();});
+  Object.keys(otherPlayers).forEach(pid=>{if(pid===playerID) return; const p=otherPlayers[pid]; ctx.fillStyle="red"; ctx.fillRect(p.x,p.y,player.w,player.h);});
+  ctx.fillStyle=player.color; ctx.fillRect(player.x,player.y,player.w,player.h);
+  let y=30; messages=messages.filter(m=>{ctx.fillStyle="#4da6ff";ctx.fillText(m.text,10,y);y+=20;m.time--;return m.time>0;});
+  ctx.fillStyle="#4da6ff"; ctx.fillText("Score: "+score,canvas.width-120,30);
+}
+
+update();
+</script>
+
+</body>
+</html>
