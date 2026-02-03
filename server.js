@@ -11,12 +11,9 @@ app.use(express.static("public"));
 io.on("connection", (socket) => {
   console.log("Player connected:", socket.id);
 
-  // Chat
   socket.on("chat", (data) => {
-    io.emit("chat", {
-      user: data.user,
-      message: data.message
-    });
+    console.log("CHAT:", data.user, data.message);
+    io.emit("chat", data);
   });
 
   socket.on("disconnect", () => {
